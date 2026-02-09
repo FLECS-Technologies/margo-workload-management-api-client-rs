@@ -169,7 +169,7 @@ paths:
                 type: string
               description: public, max-age=31536000, immutable
           content:
-            application/vnd.margo.bundle.v1+tar+gzip:
+            application/gzip:
               schema:
                 type: string
                 format: binary
