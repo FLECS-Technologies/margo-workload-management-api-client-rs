@@ -1,6 +1,5 @@
 .gitignore
 .travis.yml
-Cargo.toml
 README.md
 docs/ApiV1OnboardingCertificateGet200Response.md
 docs/ApiV1OnboardingPost201Response.md
