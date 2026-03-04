@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **api_version** | **String** |  | 
-**kind** | **Kind** |  (enum: DeploymentStatus) | 
+**kind** | **Kind** |  (enum: DeploymentStatusManifest) | 
 **deployment_id** | **String** |  | 
 **status** | [**models::DeploymentStatusManifestStatus**](DeploymentStatusManifestStatus.md) |  | 
 **components** | [**Vec<models::ComponentStatus>**](ComponentStatus.md) |  | 

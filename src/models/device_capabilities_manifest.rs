@@ -37,12 +37,12 @@ impl DeviceCapabilitiesManifest {
 ///
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum Kind {
-    #[serde(rename = "DeviceCapabilities")]
-    DeviceCapabilities,
+    #[serde(rename = "DeviceCapabilitiesManifest")]
+    DeviceCapabilitiesManifest,
 }
 
 impl Default for Kind {
     fn default() -> Kind {
-        Self::DeviceCapabilities
+        Self::DeviceCapabilitiesManifest
     }
 }

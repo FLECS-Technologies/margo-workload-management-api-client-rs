@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 pub struct AppParameterValue {
     /// Value of the parameter
     #[serde(rename = "value")]
-    pub value: serde_json::Value,
+    pub value: std::collections::HashMap<String, serde_json::Value>,
     /// Targets of the parameter
     #[serde(rename = "targets")]
     pub targets: Vec<models::AppParameterTarget>,
@@ -25,7 +25,7 @@ pub struct AppParameterValue {
 impl AppParameterValue {
     /// Application Parameter Value
     pub fn new(
-        value: serde_json::Value,
+        value: std::collections::HashMap<String, serde_json::Value>,
         targets: Vec<models::AppParameterTarget>,
     ) -> AppParameterValue {
         AppParameterValue { value, targets }

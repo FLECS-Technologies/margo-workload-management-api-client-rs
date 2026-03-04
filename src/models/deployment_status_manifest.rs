@@ -45,12 +45,12 @@ impl DeploymentStatusManifest {
 ///
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum Kind {
-    #[serde(rename = "DeploymentStatus")]
-    DeploymentStatus,
+    #[serde(rename = "DeploymentStatusManifest")]
+    DeploymentStatusManifest,
 }
 
 impl Default for Kind {
     fn default() -> Kind {
-        Self::DeploymentStatus
+        Self::DeploymentStatusManifest
     }
 }

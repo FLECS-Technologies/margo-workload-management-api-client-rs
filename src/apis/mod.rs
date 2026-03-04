@@ -24,14 +24,7 @@ impl<T> fmt::Display for Error<T> {
             Error::ReqwestMiddleware(e) => ("reqwest-middleware", e.to_string()),
             Error::Serde(e) => ("serde", e.to_string()),
             Error::Io(e) => ("IO", e.to_string()),
-            Error::ResponseError(e) => {
-                let message = if e.content.len() <= 1000 {
-                    &e.content
-                } else {
-                    "[content to large]"
-                };
-                ("response", format!("status code {}: {}", e.status, message))
-            },
+            Error::ResponseError(e) => ("response", format!("status code {}", e.status)),
         };
         write!(f, "error in {}: {}", module, e)
     }

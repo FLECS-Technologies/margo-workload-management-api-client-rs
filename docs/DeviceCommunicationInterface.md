@@ -1,12 +1,10 @@
-# ApiV1OnboardingPostRequest
+# DeviceCommunicationInterface
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**api_version** | **String** | API version identifier | 
-**kind** | **Kind** | Resource kind (enum: OnboardingRequest) | 
-**certificate** | **String** | Base64-encoded client certificate | 
+**r#type** | **Type** |  (enum: ethernet, wifi, cellular, bluetooth, usb, canbus, rs232) | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

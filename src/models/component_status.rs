@@ -33,22 +33,18 @@ impl ComponentStatus {
 ///
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum State {
-    #[serde(rename = "Pending")]
+    #[serde(rename = "pending")]
     Pending,
-    #[serde(rename = "Installing")]
+    #[serde(rename = "installing")]
     Installing,
-    #[serde(rename = "Installed")]
+    #[serde(rename = "installed")]
     Installed,
-    #[serde(rename = "Failed")]
+    #[serde(rename = "failed")]
     Failed,
-    #[serde(rename = "Removing")]
+    #[serde(rename = "removing")]
     Removing,
-    #[serde(rename = "Removed")]
+    #[serde(rename = "removed")]
     Removed,
-    #[serde(rename = "Updating")]
-    Updating,
-    #[serde(rename = "Updated")]
-    Updated,
 }
 
 impl Default for State {

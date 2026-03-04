@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Margo Workload Management API
   version: 1.0.0
-  description: 
+  description:
     API for managing workloads on Margo-compliant edge devices.
     Includes the APIs for exchanging desired state and current state.
     Communication is secured using server-side TLS (TLS 1.3 preferred),
@@ -19,6 +19,7 @@ paths:
   /api/v1/onboarding/certificate:
     get:
       summary: Download Root CA certificate
+      security: []
       responses:
         '200':
           description: Root CA certificate
@@ -36,11 +37,19 @@ paths:
         content:
           application/json:
             schema:
+              type: object
+              required: [apiVersion, kind, certificate]
               properties:
-                public_certificate:
+                apiVersion:
+                  type: string
+                  description: API version identifier
+                kind:
+                  type: string
+                  enum: [OnboardingRequest]
+                  description: Resource kind
+                certificate:
                   description: Base64-encoded client certificate
                   type: string
-              type: object
         required: true
       responses:
         '201':
@@ -48,7 +57,7 @@ paths:
             application/json:
               schema:
                 properties:
-                  client_id:
+                  clientId:
                     type: string
                 type: object
           description: New client onboarded successfully.
@@ -73,7 +82,7 @@ paths:
                 type: object
           description: Client certificate not trusted or client rejected.
       security:
-      - PayloadSignature: []
+        - PayloadSignature: []
       summary: Complete onboarding with client certificate
 
   /api/v1/clients/{clientId}/capabilities:
@@ -169,7 +178,7 @@ paths:
                 type: string
               description: public, max-age=31536000, immutable
           content:
-            application/gzip:
+            application/vnd.margo.bundle.v1+tar+gzip:
               schema:
                 type: string
                 format: binary
@@ -179,7 +188,7 @@ paths:
         '404':
           description: Bundle not found for the given digest
         '400':
-           description: Invalid request.
+          description: Invalid request.
         # TBD
         # '500':
         #   $ref: '#/components/responses/ErrorResponse'
@@ -188,7 +197,7 @@ paths:
     get:
       summary: Retrieve the complete desired state for all workloads assigned to a device
       security:
-        - PayloadSignature: []      
+        - PayloadSignature: []
       parameters:
         - name: clientId
           in: path
@@ -237,7 +246,7 @@ paths:
     get:
       summary: Retrieve an individual ApplicationDeployment YAML file
       security:
-        - PayloadSignature: []        
+        - PayloadSignature: []
       description: >
         This endpoint is used by the client to fetch the YAML for a single ApplicationDeployment after it has processed a new State Manifest and identified a small number of new or updated deployments. This allows for highly efficient, incremental updates without needing to download the full bundle.
         To make individual workload retrievals race-free and cache-friendly, this endpoint is content-addressable: the digest of the expected YAML is part of the URL. This guarantees immutability of the fetched resource and prevents a time-of-check / time-of-use race where a deployment changes between manifest retrieval and content fetch.
@@ -286,7 +295,7 @@ paths:
             ETag:
               schema:
                 type: string
-              description: > 
+              description: >
                 The ETag is returned to the client from the /deployments endpoint, it is the digest of the state manifest.
             Cache-Control:
               schema:
@@ -304,7 +313,7 @@ paths:
         '404':
           description: Deployment not found for the given digest
 
-  /api/v1/clients/{clientId}/deployment/{deploymentId}/status:
+  /api/v1/clients/{clientId}/deployments/{deploymentId}/status:
     post:
       summary: Report deployment status
       security:
@@ -375,7 +384,7 @@ components:
         url:
           type: string
           description: >
-            Content-addressable retrieval endpoint of the form /api/v1/devices/{deviceId}/bundles/{digest} where {digest} equals bundle.digest.
+            Content-addressable retrieval endpoint of the form /api/v1/clients/{clientId}/bundles/{digest} where {digest} equals bundle.digest.
     DeploymentManifestRef:
       type: object
       description: >
@@ -400,7 +409,7 @@ components:
         url:
           type: string
           description: >
-            Content-addressable endpoint of the form /api/v1/devices/{deviceId}/deployments/{deploymentId}/{digest}. The {digest} MUST equal deployments[].digest; the referenced resource is immutable
+            Content-addressable endpoint of the form /api/v1/clients/{clientId}/deployments/{deploymentId}/{digest}. The {digest} MUST equal deployments[].digest; the referenced resource is immutable
     UnsignedAppStateManifest:
       type: object
       required:
@@ -412,7 +421,7 @@ components:
         - deployments
       properties:
         manifestVersion:
-          $ref: '#/components/schemas/ManifestVersion' 
+          $ref: '#/components/schemas/ManifestVersion'
         bundle:
           $ref: '#/components/schemas/DeploymentBundleRef'
         deployments:
@@ -428,7 +437,7 @@ components:
           type: string
         kind:
           type: string
-          enum: [DeviceCapabilities]
+          enum: [DeviceCapabilitiesManifest]
         properties:
           type: object
           required: [id, vendor, modelNumber, serialNumber, roles, resources]
@@ -448,17 +457,29 @@ components:
                 enum: [Standalone Cluster, Cluster Leader, Standalone Device]
             resources:
               type: object
-              required: [cpu, memory, storage]
+              required: [cpu, memory, storage, peripherals, interfaces]
               properties:
                 cpu:
                   type: object
+                  required: [cores]
                   properties:
                     cores:
                       type: number
+                    architecture:
+                      type: string
+                      enum: [amd64, x86_64, arm64, arm]
                 memory:
                   type: string
                 storage:
                   type: string
+                peripherals:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DevicePeripheral'
+                interfaces:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeviceCommunicationInterface'
 
     ComponentStatus:
       type: object
@@ -468,7 +489,7 @@ components:
           type: string
         state:
           type: string
-          enum: [Pending, Installing, Installed, Failed, Removing, Removed, Updating, Updated]
+          enum: [pending, installing, installed, failed, removing, removed]
         error:
           type: object
           properties:
@@ -485,7 +506,7 @@ components:
           type: string
         kind:
           type: string
-          enum: [DeploymentStatus]
+          enum: [DeploymentStatusManifest]
         deploymentId:
           type: string
         status:
@@ -494,7 +515,7 @@ components:
           properties:
             state:
               type: string
-              enum: [Pending, Installing, Installed, Failed, Removing, Removed, Updating, Updated]
+              enum: [pending, installing, installed, failed, removing, removed]
             error:
               type: object
               properties:
@@ -506,6 +527,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ComponentStatus'
+
+    DevicePeripheral:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [gpu, display, camera, microphone, speaker]
+        manufacturer:
+          type: string
+        model:
+          type: string
+
+    DeviceCommunicationInterface:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [ethernet, wifi, cellular, bluetooth, usb, canbus, rs232]
 
     # app deployment struct added here for ease of programming, the code generators will generate the structs
     # for the actual app deployment yaml and parsing would be easy to do

@@ -1,12 +1,12 @@
-# ApiV1OnboardingPostRequest
+# DevicePeripheral
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**api_version** | **String** | API version identifier | 
-**kind** | **Kind** | Resource kind (enum: OnboardingRequest) | 
-**certificate** | **String** | Base64-encoded client certificate | 
+**r#type** | **Type** |  (enum: gpu, display, camera, microphone, speaker) | 
+**manufacturer** | Option<**String**> |  | [optional]
+**model** | Option<**String**> |  | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

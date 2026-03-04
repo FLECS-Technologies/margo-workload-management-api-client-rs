@@ -29,8 +29,8 @@ Class | Method | HTTP request | Description
 *DefaultApi* | [**api_v1_clients_client_id_bundles_digest_get**](docs/DefaultApi.md#api_v1_clients_client_id_bundles_digest_get) | **GET** /api/v1/clients/{clientId}/bundles/{digest} | Retrieve bundle information for a specific device and digest
 *DefaultApi* | [**api_v1_clients_client_id_capabilities_post**](docs/DefaultApi.md#api_v1_clients_client_id_capabilities_post) | **POST** /api/v1/clients/{clientId}/capabilities | Report device capabilities
 *DefaultApi* | [**api_v1_clients_client_id_capabilities_put**](docs/DefaultApi.md#api_v1_clients_client_id_capabilities_put) | **PUT** /api/v1/clients/{clientId}/capabilities | Update device capabilities (Update)
-*DefaultApi* | [**api_v1_clients_client_id_deployment_deployment_id_status_post**](docs/DefaultApi.md#api_v1_clients_client_id_deployment_deployment_id_status_post) | **POST** /api/v1/clients/{clientId}/deployment/{deploymentId}/status | Report deployment status
 *DefaultApi* | [**api_v1_clients_client_id_deployments_deployment_id_digest_get**](docs/DefaultApi.md#api_v1_clients_client_id_deployments_deployment_id_digest_get) | **GET** /api/v1/clients/{clientId}/deployments/{deploymentId}/{digest} | Retrieve an individual ApplicationDeployment YAML file
+*DefaultApi* | [**api_v1_clients_client_id_deployments_deployment_id_status_post**](docs/DefaultApi.md#api_v1_clients_client_id_deployments_deployment_id_status_post) | **POST** /api/v1/clients/{clientId}/deployments/{deploymentId}/status | Report deployment status
 *DefaultApi* | [**api_v1_clients_client_id_deployments_get**](docs/DefaultApi.md#api_v1_clients_client_id_deployments_get) | **GET** /api/v1/clients/{clientId}/deployments | Retrieve the complete desired state for all workloads assigned to a device
 *DefaultApi* | [**api_v1_onboarding_certificate_get**](docs/DefaultApi.md#api_v1_onboarding_certificate_get) | **GET** /api/v1/onboarding/certificate | Download Root CA certificate
 *DefaultApi* | [**api_v1_onboarding_post**](docs/DefaultApi.md#api_v1_onboarding_post) | **POST** /api/v1/onboarding | Complete onboarding with client certificate
@@ -62,6 +62,8 @@ Class | Method | HTTP request | Description
  - [DeviceCapabilitiesManifestProperties](docs/DeviceCapabilitiesManifestProperties.md)
  - [DeviceCapabilitiesManifestPropertiesResources](docs/DeviceCapabilitiesManifestPropertiesResources.md)
  - [DeviceCapabilitiesManifestPropertiesResourcesCpu](docs/DeviceCapabilitiesManifestPropertiesResourcesCpu.md)
+ - [DeviceCommunicationInterface](docs/DeviceCommunicationInterface.md)
+ - [DevicePeripheral](docs/DevicePeripheral.md)
  - [HelmApplicationDeploymentProfileComponent](docs/HelmApplicationDeploymentProfileComponent.md)
  - [HelmApplicationDeploymentProfileComponentProperties](docs/HelmApplicationDeploymentProfileComponentProperties.md)
  - [UnsignedAppStateManifest](docs/UnsignedAppStateManifest.md)
