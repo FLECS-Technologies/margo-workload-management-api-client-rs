@@ -10,15 +10,46 @@ match all requirements, so we maintain two complementary mechanisms to persist p
 - **Patch files** (`patches/`) — apply targeted, file-specific changes after generation via `git apply`. Patches are
   applied in numeric order.
 
+## API spec source
+
+The OpenAPI spec is maintained in the
+[margo/specification](https://github.com/margo/specification/blob/pre-draft/system-design/specification/margo-management-interface/workload-management-api-1.0.0.yaml)
+repository. It is **not** committed here — `generate.sh` fetches it directly from GitHub at generation time.
+
+The exact spec version used for the currently committed code is recorded in `API_SPEC_VERSION`.
+
 ## Generate the code
 
-Execute the following command from the repository root directory:
-
 ```bash
-./generate.sh
+./generate.sh [REF]
 ```
 
-This script runs code generation, formats the output, and applies all patches in one step.
+`REF` can be a branch name, tag, or full commit SHA from the `margo/specification` repository.
+Defaults to `pre-draft` if omitted.
+
+Examples:
+```bash
+./generate.sh                      # use pre-draft branch
+./generate.sh main                 # use main branch
+./generate.sh v1.2.0               # use a tag
+./generate.sh a1b2c3d4e5f6...      # use a specific commit SHA
+```
+
+The script:
+1. Resolves the ref to a full commit SHA via the GitHub API
+2. Fetches the spec directly from GitHub raw content (no local copy)
+3. Runs code generation, formats the output with `cargo +nightly fmt`, and applies all patches
+4. Writes `API_SPEC_VERSION` with the resolved SHA and (if a named ref was used) the ref name
+
+## Automated updates
+
+A nightly GitHub Actions workflow (`.github/workflows/update-api-client.yml`) runs at 02:00 UTC and:
+- Resolves the `pre-draft` branch to its current commit SHA
+- Skips if the SHA matches `API_SPEC_VERSION` (no change in the spec repo)
+- Regenerates and opens a PR only if the generated code in `src/` actually changed
+
+The workflow can also be triggered manually via `workflow_dispatch` with a custom `ref` input. Manual runs
+skip the code-change check and always open a PR (unless the SHA and ref are both already up to date).
 
 ## Make necessary manual adjustments
 
