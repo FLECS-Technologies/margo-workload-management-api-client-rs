@@ -23,7 +23,7 @@ pub struct DeploymentManifestRef {
     /// Unsigned 64-bit advisory estimate of the decoded payload length in bytes for the deployment YAML. Provided for planning or progress display. MUST NOT be used for integrity; digest verification remains mandatory.
     #[serde(rename = "sizeBytes", skip_serializing_if = "Option::is_none")]
     pub size_bytes: Option<f64>,
-    /// Content-addressable endpoint of the form /api/v1/clients/{clientId}/deployments/{deploymentId}/{digest}. The {digest} MUST equal deployments[].digest; the referenced resource is immutable
+    /// Content-addressable endpoint of the form /api/v1/devices/{deviceId}/deployments/{deploymentId}/{digest}. The {digest} MUST equal deployments[].digest; the referenced resource is immutable
     #[serde(rename = "url")]
     pub url: String,
 }

@@ -27,8 +27,6 @@ docs/DeviceCapabilitiesManifest.md
 docs/DeviceCapabilitiesManifestProperties.md
 docs/DeviceCapabilitiesManifestPropertiesResources.md
 docs/DeviceCapabilitiesManifestPropertiesResourcesCpu.md
-docs/DeviceCommunicationInterface.md
-docs/DevicePeripheral.md
 docs/HelmApplicationDeploymentProfileComponent.md
 docs/HelmApplicationDeploymentProfileComponentProperties.md
 docs/UnsignedAppStateManifest.md
@@ -60,8 +58,6 @@ src/models/device_capabilities_manifest.rs
 src/models/device_capabilities_manifest_properties.rs
 src/models/device_capabilities_manifest_properties_resources.rs
 src/models/device_capabilities_manifest_properties_resources_cpu.rs
-src/models/device_communication_interface.rs
-src/models/device_peripheral.rs
 src/models/helm_application_deployment_profile_component.rs
 src/models/helm_application_deployment_profile_component_properties.rs
 src/models/mod.rs

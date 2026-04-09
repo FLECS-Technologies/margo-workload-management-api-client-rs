@@ -44,22 +44,22 @@ pub enum ApiV1ClientsClientIdCapabilitiesPutError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`api_v1_clients_client_id_deployment_deployment_id_status_post`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ApiV1ClientsClientIdDeploymentDeploymentIdStatusPostError {
+    Status400(),
+    Status401(),
+    Status403(),
+    Status422(),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`api_v1_clients_client_id_deployments_deployment_id_digest_get`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ApiV1ClientsClientIdDeploymentsDeploymentIdDigestGetError {
     Status404(),
-    UnknownValue(serde_json::Value),
-}
-
-/// struct for typed errors of method [`api_v1_clients_client_id_deployments_deployment_id_status_post`]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum ApiV1ClientsClientIdDeploymentsDeploymentIdStatusPostError {
-    Status400(),
-    Status401(),
-    Status403(),
-    Status422(),
     UnknownValue(serde_json::Value),
 }
 
@@ -238,6 +238,59 @@ pub async fn api_v1_clients_client_id_capabilities_put(
     }
 }
 
+pub async fn api_v1_clients_client_id_deployment_deployment_id_status_post(
+    configuration: &configuration::Configuration,
+    client_id: &str,
+    deployment_id: &str,
+    deployment_status_manifest: models::DeploymentStatusManifest,
+) -> Result<(), Error<ApiV1ClientsClientIdDeploymentDeploymentIdStatusPostError>> {
+    // add a prefix to parameters to efficiently prevent name collisions
+    let p_path_client_id = client_id;
+    let p_path_deployment_id = deployment_id;
+    let p_body_deployment_status_manifest = deployment_status_manifest;
+
+    let uri_str = format!(
+        "{}/api/v1/clients/{clientId}/deployment/{deploymentId}/status",
+        configuration.base_path,
+        clientId = crate::apis::urlencode(p_path_client_id),
+        deploymentId = crate::apis::urlencode(p_path_deployment_id)
+    );
+    let mut req_builder = configuration
+        .client
+        .request(reqwest::Method::POST, &uri_str);
+
+    if let Some(ref user_agent) = configuration.user_agent {
+        req_builder = req_builder.header(reqwest::header::USER_AGENT, user_agent.clone());
+    }
+    if let Some(ref apikey) = configuration.api_key {
+        let key = apikey.key.clone();
+        let value = match apikey.prefix {
+            Some(ref prefix) => format!("{} {}", prefix, key),
+            None => key,
+        };
+        req_builder = req_builder.header("X-Payload-Signature", value);
+    };
+    req_builder = req_builder.json(&p_body_deployment_status_manifest);
+
+    let req = req_builder.build()?;
+    let resp = configuration.client.execute(req).await?;
+
+    let status = resp.status();
+
+    if !status.is_client_error() && !status.is_server_error() {
+        Ok(())
+    } else {
+        let content = resp.text().await?;
+        let entity: Option<ApiV1ClientsClientIdDeploymentDeploymentIdStatusPostError> =
+            serde_json::from_str(&content).ok();
+        Err(Error::ResponseError(ResponseContent {
+            status,
+            content,
+            entity,
+        }))
+    }
+}
+
 /// This endpoint is used by the client to fetch the YAML for a single ApplicationDeployment after it has processed a new State Manifest and identified a small number of new or updated deployments. This allows for highly efficient, incremental updates without needing to download the full bundle. To make individual workload retrievals race-free and cache-friendly, this endpoint is content-addressable: the digest of the expected YAML is part of the URL. This guarantees immutability of the fetched resource and prevents a time-of-check / time-of-use race where a deployment changes between manifest retrieval and content fetch.
 pub async fn api_v1_clients_client_id_deployments_deployment_id_digest_get(
     configuration: &configuration::Configuration,
@@ -292,59 +345,6 @@ pub async fn api_v1_clients_client_id_deployments_deployment_id_digest_get(
     } else {
         let content = resp.text().await?;
         let entity: Option<ApiV1ClientsClientIdDeploymentsDeploymentIdDigestGetError> =
-            serde_json::from_str(&content).ok();
-        Err(Error::ResponseError(ResponseContent {
-            status,
-            content,
-            entity,
-        }))
-    }
-}
-
-pub async fn api_v1_clients_client_id_deployments_deployment_id_status_post(
-    configuration: &configuration::Configuration,
-    client_id: &str,
-    deployment_id: &str,
-    deployment_status_manifest: models::DeploymentStatusManifest,
-) -> Result<(), Error<ApiV1ClientsClientIdDeploymentsDeploymentIdStatusPostError>> {
-    // add a prefix to parameters to efficiently prevent name collisions
-    let p_path_client_id = client_id;
-    let p_path_deployment_id = deployment_id;
-    let p_body_deployment_status_manifest = deployment_status_manifest;
-
-    let uri_str = format!(
-        "{}/api/v1/clients/{clientId}/deployments/{deploymentId}/status",
-        configuration.base_path,
-        clientId = crate::apis::urlencode(p_path_client_id),
-        deploymentId = crate::apis::urlencode(p_path_deployment_id)
-    );
-    let mut req_builder = configuration
-        .client
-        .request(reqwest::Method::POST, &uri_str);
-
-    if let Some(ref user_agent) = configuration.user_agent {
-        req_builder = req_builder.header(reqwest::header::USER_AGENT, user_agent.clone());
-    }
-    if let Some(ref apikey) = configuration.api_key {
-        let key = apikey.key.clone();
-        let value = match apikey.prefix {
-            Some(ref prefix) => format!("{} {}", prefix, key),
-            None => key,
-        };
-        req_builder = req_builder.header("X-Payload-Signature", value);
-    };
-    req_builder = req_builder.json(&p_body_deployment_status_manifest);
-
-    let req = req_builder.build()?;
-    let resp = configuration.client.execute(req).await?;
-
-    let status = resp.status();
-
-    if !status.is_client_error() && !status.is_server_error() {
-        Ok(())
-    } else {
-        let content = resp.text().await?;
-        let entity: Option<ApiV1ClientsClientIdDeploymentsDeploymentIdStatusPostError> =
             serde_json::from_str(&content).ok();
         Err(Error::ResponseError(ResponseContent {
             status,
@@ -432,6 +432,14 @@ pub async fn api_v1_onboarding_certificate_get(
     if let Some(ref user_agent) = configuration.user_agent {
         req_builder = req_builder.header(reqwest::header::USER_AGENT, user_agent.clone());
     }
+    if let Some(ref apikey) = configuration.api_key {
+        let key = apikey.key.clone();
+        let value = match apikey.prefix {
+            Some(ref prefix) => format!("{} {}", prefix, key),
+            None => key,
+        };
+        req_builder = req_builder.header("X-Payload-Signature", value);
+    };
 
     let req = req_builder.build()?;
     let resp = configuration.client.execute(req).await?;

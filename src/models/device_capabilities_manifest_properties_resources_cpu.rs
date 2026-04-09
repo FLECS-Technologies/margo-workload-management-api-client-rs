@@ -13,35 +13,12 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct DeviceCapabilitiesManifestPropertiesResourcesCpu {
-    #[serde(rename = "cores")]
-    pub cores: f64,
-    #[serde(rename = "architecture", skip_serializing_if = "Option::is_none")]
-    pub architecture: Option<Architecture>,
+    #[serde(rename = "cores", skip_serializing_if = "Option::is_none")]
+    pub cores: Option<f64>,
 }
 
 impl DeviceCapabilitiesManifestPropertiesResourcesCpu {
-    pub fn new(cores: f64) -> DeviceCapabilitiesManifestPropertiesResourcesCpu {
-        DeviceCapabilitiesManifestPropertiesResourcesCpu {
-            cores,
-            architecture: None,
-        }
-    }
-}
-///
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
-pub enum Architecture {
-    #[serde(rename = "amd64")]
-    Amd64,
-    #[serde(rename = "x86_64")]
-    X8664,
-    #[serde(rename = "arm64")]
-    Arm64,
-    #[serde(rename = "arm")]
-    Arm,
-}
-
-impl Default for Architecture {
-    fn default() -> Architecture {
-        Self::Amd64
+    pub fn new() -> DeviceCapabilitiesManifestPropertiesResourcesCpu {
+        DeviceCapabilitiesManifestPropertiesResourcesCpu { cores: None }
     }
 }

@@ -27,18 +27,22 @@ impl DeploymentStatusManifestStatus {
 ///
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum State {
-    #[serde(rename = "pending")]
+    #[serde(rename = "Pending")]
     Pending,
-    #[serde(rename = "installing")]
+    #[serde(rename = "Installing")]
     Installing,
-    #[serde(rename = "installed")]
+    #[serde(rename = "Installed")]
     Installed,
-    #[serde(rename = "failed")]
+    #[serde(rename = "Failed")]
     Failed,
-    #[serde(rename = "removing")]
+    #[serde(rename = "Removing")]
     Removing,
-    #[serde(rename = "removed")]
+    #[serde(rename = "Removed")]
     Removed,
+    #[serde(rename = "Updating")]
+    Updating,
+    #[serde(rename = "Updated")]
+    Updated,
 }
 
 impl Default for State {

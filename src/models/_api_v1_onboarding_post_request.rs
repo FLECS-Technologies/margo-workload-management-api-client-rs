@@ -13,35 +13,15 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ApiV1OnboardingPostRequest {
-    /// API version identifier
-    #[serde(rename = "apiVersion")]
-    pub api_version: String,
-    /// Resource kind
-    #[serde(rename = "kind")]
-    pub kind: Kind,
     /// Base64-encoded client certificate
-    #[serde(rename = "certificate")]
-    pub certificate: String,
+    #[serde(rename = "public_certificate", skip_serializing_if = "Option::is_none")]
+    pub public_certificate: Option<String>,
 }
 
 impl ApiV1OnboardingPostRequest {
-    pub fn new(api_version: String, kind: Kind, certificate: String) -> ApiV1OnboardingPostRequest {
+    pub fn new() -> ApiV1OnboardingPostRequest {
         ApiV1OnboardingPostRequest {
-            api_version,
-            kind,
-            certificate,
+            public_certificate: None,
         }
-    }
-}
-/// Resource kind
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
-pub enum Kind {
-    #[serde(rename = "OnboardingRequest")]
-    OnboardingRequest,
-}
-
-impl Default for Kind {
-    fn default() -> Kind {
-        Self::OnboardingRequest
     }
 }

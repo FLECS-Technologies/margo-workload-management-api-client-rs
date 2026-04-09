@@ -19,10 +19,6 @@ pub struct DeviceCapabilitiesManifestPropertiesResources {
     pub memory: String,
     #[serde(rename = "storage")]
     pub storage: String,
-    #[serde(rename = "peripherals")]
-    pub peripherals: Vec<models::DevicePeripheral>,
-    #[serde(rename = "interfaces")]
-    pub interfaces: Vec<models::DeviceCommunicationInterface>,
 }
 
 impl DeviceCapabilitiesManifestPropertiesResources {
@@ -30,15 +26,11 @@ impl DeviceCapabilitiesManifestPropertiesResources {
         cpu: models::DeviceCapabilitiesManifestPropertiesResourcesCpu,
         memory: String,
         storage: String,
-        peripherals: Vec<models::DevicePeripheral>,
-        interfaces: Vec<models::DeviceCommunicationInterface>,
     ) -> DeviceCapabilitiesManifestPropertiesResources {
         DeviceCapabilitiesManifestPropertiesResources {
             cpu: Box::new(cpu),
             memory,
             storage,
-            peripherals,
-            interfaces,
         }
     }
 }
