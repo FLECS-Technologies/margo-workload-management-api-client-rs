@@ -1,5 +1,6 @@
 .gitignore
 .travis.yml
+Cargo.toml
 README.md
 docs/ApiV1OnboardingCertificateGet200Response.md
 docs/ApiV1OnboardingPost201Response.md
@@ -31,7 +32,6 @@ docs/DevicePeripheral.md
 docs/HelmApplicationDeploymentProfileComponent.md
 docs/HelmApplicationDeploymentProfileComponentProperties.md
 docs/UnsignedAppStateManifest.md
-git_push.sh
 src/apis/configuration.rs
 src/apis/default_api.rs
 src/apis/mod.rs
