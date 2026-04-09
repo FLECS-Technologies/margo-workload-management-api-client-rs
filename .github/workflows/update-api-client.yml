@@ -1,0 +1,133 @@
+name: Update API Client
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Ref of margo/specification to generate from (commit SHA, branch, or tag)"
+        required: false
+        default: "pre-draft"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Resolve ref to commit SHA
+        id: spec
+        env:
+          REF: ${{ github.event.inputs.ref || 'pre-draft' }}
+        run: |
+          echo "Resolving ref '${REF}' in margo/specification..."
+          API_RESPONSE=$(curl -sf "https://api.github.com/repos/margo/specification/commits/${REF}")
+          NEW_SHA=$(echo "${API_RESPONSE}" | jq -r '.sha')
+          if [ -z "${NEW_SHA}" ] || [ "${NEW_SHA}" = "null" ]; then
+            echo "Error: failed to resolve ref '${REF}'" >&2
+            exit 1
+          fi
+          echo "Resolved to: ${NEW_SHA}"
+          echo "sha=${NEW_SHA}" >> "$GITHUB_OUTPUT"
+          echo "ref=${REF}" >> "$GITHUB_OUTPUT"
+          echo "sha_short=${NEW_SHA:0:8}" >> "$GITHUB_OUTPUT"
+
+      - name: Check if generation is needed
+        id: check
+        env:
+          NEW_SHA: ${{ steps.spec.outputs.sha }}
+          NEW_REF: ${{ steps.spec.outputs.ref }}
+        run: |
+          CURRENT_SHA=""
+          CURRENT_REF=""
+          if [ -f API_SPEC_VERSION ]; then
+            source API_SPEC_VERSION
+            CURRENT_SHA="${COMMIT_SHA:-}"
+            CURRENT_REF="${REF:-}"
+          fi
+
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            if [ "${NEW_SHA}" = "${CURRENT_SHA}" ]; then
+              echo "SHA unchanged, nothing to do."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            # workflow_dispatch: skip only if both SHA and ref are identical
+            if [ "${NEW_SHA}" = "${CURRENT_SHA}" ] && [ "${NEW_REF}" = "${CURRENT_REF}" ]; then
+              echo "SHA and ref unchanged, nothing to do."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - name: Install Rust nightly
+        if: steps.check.outputs.skip != 'true'
+        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9
+        with:
+          toolchain: nightly
+          components: rustfmt
+
+      - name: Generate client
+        if: steps.check.outputs.skip != 'true'
+        env:
+          REF: ${{ steps.spec.outputs.ref }}
+        run: ./generate.sh "${REF}"
+
+      - name: Check for changes
+        if: steps.check.outputs.skip != 'true'
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            # On scheduled runs only open a PR if something besides API_SPEC_VERSION changed
+            # git status --porcelain covers both modified tracked files and new untracked files
+            CHANGED=$(git status --porcelain | cut -c4- | grep -v '^API_SPEC_VERSION$' || true)
+            if [ -z "${CHANGED}" ]; then
+              echo "No changes besides API_SPEC_VERSION, skipping PR."
+              echo "open_pr=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "open_pr=true" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            # On manual runs always open a PR (at minimum API_SPEC_VERSION changed)
+            echo "open_pr=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build PR body
+        if: steps.check.outputs.skip != 'true' && steps.changes.outputs.open_pr == 'true'
+        id: pr_body
+        run: |
+          source API_SPEC_VERSION
+          BODY="Automated update triggered by a change in the [margo/specification](https://github.com/margo/specification) API spec.
+
+          **Spec commit:** [${COMMIT_SHA}](${COMMIT_URL})"
+          if [ -n "${REF:-}" ]; then
+            BODY="${BODY}
+          **Ref used:** [${REF}](${REF_URL})"
+          fi
+          # Use GitHub's multiline output syntax
+          {
+            echo "body<<EOF"
+            echo "${BODY}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Open pull request
+        if: steps.check.outputs.skip != 'true' && steps.changes.outputs.open_pr == 'true'
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          branch: update-api-client/${{ steps.spec.outputs.sha_short }}
+          commit-message: "Update API client to margo/specification@${{ steps.spec.outputs.sha_short }}"
+          title: "Update API client to margo/specification@${{ steps.spec.outputs.sha_short }}"
+          body: ${{ steps.pr_body.outputs.body }}
+          labels: automated
