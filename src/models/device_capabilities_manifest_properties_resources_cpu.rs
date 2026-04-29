@@ -32,8 +32,6 @@ impl DeviceCapabilitiesManifestPropertiesResourcesCpu {
 pub enum Architecture {
     #[serde(rename = "amd64")]
     Amd64,
-    #[serde(rename = "x86_64")]
-    X8664,
     #[serde(rename = "arm64")]
     Arm64,
     #[serde(rename = "arm")]
