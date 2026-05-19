@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ComposeApplicationDeploymentProfileComponentProperties {
-    /// Package location of the component
+    /// The URL indicating the Compose package's location. It should be a direct path to the compose.yaml or compose.yaml file archived in tar.gz
     #[serde(rename = "packageLocation")]
     pub package_location: String,
     /// Key location of the component
