@@ -1,4 +1,4 @@
-COMMIT_SHA=8f48e656cc32f01de1183670a1983c859fdb60da
-COMMIT_URL=https://github.com/margo/specification/blob/8f48e656cc32f01de1183670a1983c859fdb60da/system-design/specification/margo-management-interface/workload-management-api-1.0.0.yaml
+COMMIT_SHA=1bd4be2c30ab2301aea263bd0f6978f83f98e204
+COMMIT_URL=https://github.com/margo/specification/blob/1bd4be2c30ab2301aea263bd0f6978f83f98e204/system-design/specification/margo-management-interface/workload-management-api-1.0.0.yaml
 REF=pre-draft
 REF_URL=https://github.com/margo/specification/blob/pre-draft/system-design/specification/margo-management-interface/workload-management-api-1.0.0.yaml
