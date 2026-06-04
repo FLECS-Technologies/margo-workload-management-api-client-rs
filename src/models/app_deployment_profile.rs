@@ -34,14 +34,14 @@ impl AppDeploymentProfile {
 /// Type of deployment profile
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum Type {
-    #[serde(rename = "helm.v3")]
-    HelmV3,
+    #[serde(rename = "helm")]
+    Helm,
     #[serde(rename = "compose")]
     Compose,
 }
 
 impl Default for Type {
     fn default() -> Type {
-        Self::HelmV3
+        Self::Helm
     }
 }
