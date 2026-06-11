@@ -15,7 +15,7 @@ license = "{{.}}"
 {{/licenseInfo}}
 {{^licenseInfo}}
 # Override this license by providing a License Object in the OpenAPI.
-license = "Apache-2.0"
+license = "Unlicense"
 {{/licenseInfo}}
 edition = "2021"
 {{#publishRustRegistry}}
@@ -94,7 +94,6 @@ google-cloud-token = "^0.1"
 default = [{{#reqwestDefaultFeatures}}"{{.}}"{{^-last}}, {{/-last}}{{/reqwestDefaultFeatures}}]
 native-tls = ["reqwest/native-tls"]
 rustls = ["reqwest/rustls"]
-stream = ["reqwest/stream"]
 {{/reqwest}}
 {{#reqwestTrait}}
 async-trait = "^0.1"
