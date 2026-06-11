@@ -8,6 +8,13 @@ pub struct ResponseContent<T> {
     pub entity: Option<T>,
 }
 
+/// A successful response paired with its typed response headers.
+#[derive(Debug, Clone)]
+pub struct WithHeaders<T, H> {
+    pub body: T,
+    pub headers: H,
+}
+
 #[derive(Debug)]
 pub enum Error<T> {
     Reqwest(reqwest::Error),

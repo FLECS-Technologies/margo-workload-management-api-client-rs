@@ -1,9 +1,9 @@
 {{>partial_header}}
 
 use reqwest;
-use serde::{Deserialize, Serialize, de::Error as _};
+use serde::{Deserialize, Serialize};
 use crate::{apis::ResponseContent, models};
-use super::{Error, configuration, ContentType};
+use super::{Error, configuration};
 {{#operations}}
 {{#operation}}
 {{#vendorExtensions.useAsyncFileStream}}
@@ -47,27 +47,35 @@ pub struct {{{operationIdCamelCase}}}Params {
 {{/operation}}
 {{/operations}}
 
-{{#supportMultipleResponses}}
 {{#operations}}
 {{#operation}}
+{{^isResponseFile}}
 /// struct for typed successes of method [`{{operationId}}`]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
+#[derive(Debug, Clone)]
 pub enum {{{operationIdCamelCase}}}Success {
     {{#responses}}
     {{#is2xx}}
-    Status{{code}}({{#isEnum}}{{{enumName}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{/isEnum}}),
+    Status{{code}}({{#dataType}}{{{dataType}}}{{/dataType}}),
     {{/is2xx}}
     {{#is3xx}}
-    Status{{code}}({{#isEnum}}{{{enumName}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{/isEnum}}),
+    Status{{code}}({{#dataType}}{{{dataType}}}{{/dataType}}),
     {{/is3xx}}
     {{/responses}}
-    UnknownValue(serde_json::Value),
 }
 
+{{#hasResponseHeaders}}
+/// struct for typed response headers of method [`{{operationId}}`]
+#[derive(Debug, Clone)]
+pub struct {{{operationIdCamelCase}}}Headers {
+    {{#responseHeaders}}
+    pub {{{name}}}: Option<{{{dataType}}}>,
+    {{/responseHeaders}}
+}
+
+{{/hasResponseHeaders}}
+{{/isResponseFile}}
 {{/operation}}
 {{/operations}}
-{{/supportMultipleResponses}}
 {{#operations}}
 {{#operation}}
 /// struct for typed errors of method [`{{operationId}}`]
@@ -112,10 +120,8 @@ pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: 
 }}{{#isResponseFile}}{{#supportAsync}}reqwest::Response{{/supportAsync}}{{^supportAsync}}reqwest::blocking::Response{{/supportAsync}}{{/isResponseFile}}{{!
 ### Regular Responses
 }}{{^isResponseFile}}{{!
-### Multi response support
-}}{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{!
-### Regular return type
-}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{{returnType}}}{{/supportMultipleResponses}}{{/isResponseFile}}{{!
+### Headers present: wrap success enum in WithHeaders; otherwise bare success enum
+}}{{#hasResponseHeaders}}crate::apis::WithHeaders<{{{operationIdCamelCase}}}Success, {{{operationIdCamelCase}}}Headers>{{/hasResponseHeaders}}{{^hasResponseHeaders}}{{{operationIdCamelCase}}}Success{{/hasResponseHeaders}}{{/isResponseFile}}{{!
 ### Error Type
 }}, Error<{{{operationIdCamelCase}}}Error>> {
 {{/vendorExtensions.x-group-parameters}}
@@ -139,10 +145,8 @@ pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: 
 }}{{#isResponseFile}}{{#supportAsync}}reqwest::Response{{/supportAsync}}{{^supportAsync}}reqwest::blocking::Response{{/supportAsync}}{{/isResponseFile}}{{!
 ### Regular Responses
 }}{{^isResponseFile}}{{!
-### Multi response support
-}}{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{!
-### Regular return type
-}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{{returnType}}}{{/supportMultipleResponses}}{{/isResponseFile}}{{!
+### Headers present: wrap success enum in WithHeaders; otherwise bare success enum
+}}{{#hasResponseHeaders}}crate::apis::WithHeaders<{{{operationIdCamelCase}}}Success, {{{operationIdCamelCase}}}Headers>{{/hasResponseHeaders}}{{^hasResponseHeaders}}{{{operationIdCamelCase}}}Success{{/hasResponseHeaders}}{{/isResponseFile}}{{!
 ### Error Type
 }}, Error<{{{operationIdCamelCase}}}Error>> {
     {{#allParams.0}}
@@ -588,63 +592,78 @@ pub {{#supportAsync}}async {{/supportAsync}}fn {{{operationId}}}(configuration: 
     let resp = configuration.client.execute(req){{#supportAsync}}.await{{/supportAsync}}?;
 
     let status = resp.status();
-    {{^supportMultipleResponses}}
-    {{^isResponseFile}}
-    {{#returnType}}
-    let content_type = resp
-        .headers()
-        .get("content-type")
-        .and_then(|v| v.to_str().ok())
-        .unwrap_or("application/octet-stream");
-    let content_type = super::ContentType::from(content_type);
-    {{/returnType}}
-    {{/isResponseFile}}
-    {{/supportMultipleResponses}}
-
+    {{#isResponseFile}}
     if !status.is_client_error() && !status.is_server_error() {
-        {{^supportMultipleResponses}}
-        {{#isResponseFile}}
         Ok(resp)
-        {{/isResponseFile}}
-        {{^isResponseFile}}
-        {{^returnType}}
-        Ok(())
-        {{/returnType}}
-        {{#returnType}}
-        let content = resp.text(){{#supportAsync}}.await{{/supportAsync}}?;
-        match content_type {
-            {{^useSerdePathToError}}
-            ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
-            {{/useSerdePathToError}}
-            {{#useSerdePathToError}}
-            ContentType::Json => serde_path_to_error::deserialize(&mut serde_json::Deserializer::from_str(&content)).map_err(Error::from),
-            {{/useSerdePathToError}}
-            {{#vendorExtensions.x-supports-plain-text}}
-            ContentType::Text => return Ok(content),
-            {{/vendorExtensions.x-supports-plain-text}}
-            {{^vendorExtensions.x-supports-plain-text}}
-            ContentType::Text => return Err(Error::from(serde_json::Error::custom("Received `text/plain` content type response that cannot be converted to `{{returnType}}`"))),
-            {{/vendorExtensions.x-supports-plain-text}}
-            ContentType::Unsupported(unknown_type) => return Err(Error::from(serde_json::Error::custom(format!("Received `{unknown_type}` content type response that cannot be converted to `{{returnType}}`")))),
-        }
-        {{/returnType}}
-        {{/isResponseFile}}
-        {{/supportMultipleResponses}}
-        {{#supportMultipleResponses}}
-        {{#isResponseFile}}
-        Ok(resp)
-        {{/isResponseFile}}
-        {{^isResponseFile}}
-        let content = resp.text(){{#supportAsync}}.await{{/supportAsync}}?;
-        let entity: Option<{{{operationIdCamelCase}}}Success> = serde_json::from_str(&content).ok();
-        Ok(ResponseContent { status, content, entity })
-        {{/isResponseFile}}
-        {{/supportMultipleResponses}}
     } else {
         let content = resp.text(){{#supportAsync}}.await{{/supportAsync}}?;
         let entity: Option<{{{operationIdCamelCase}}}Error> = serde_json::from_str(&content).ok();
         Err(Error::ResponseError(ResponseContent { status, content, entity }))
     }
+    {{/isResponseFile}}
+    {{^isResponseFile}}
+    {{#hasResponseHeaders}}
+    let response_headers = {{{operationIdCamelCase}}}Headers {
+        {{#responseHeaders}}
+        {{{name}}}: resp.headers().get("{{{baseName}}}").and_then(|v| v.to_str().ok()).and_then(|v| v.parse().ok()),
+        {{/responseHeaders}}
+    };
+    {{/hasResponseHeaders}}
+
+    if !status.is_client_error() && !status.is_server_error() {
+        let entity = match status.as_u16() {
+            {{#responses}}
+            {{#is2xx}}
+            {{code}} => {
+                {{^dataType}}
+                {{{operationIdCamelCase}}}Success::Status{{code}}()
+                {{/dataType}}
+                {{#dataType}}
+                {{#isString}}
+                {{{operationIdCamelCase}}}Success::Status{{code}}(resp.text(){{#supportAsync}}.await{{/supportAsync}}?)
+                {{/isString}}
+                {{^isString}}
+                let content = resp.text(){{#supportAsync}}.await{{/supportAsync}}?;
+                {{{operationIdCamelCase}}}Success::Status{{code}}(serde_json::from_str(&content).map_err(Error::from)?)
+                {{/isString}}
+                {{/dataType}}
+            },
+            {{/is2xx}}
+            {{#is3xx}}
+            {{code}} => {
+                {{^dataType}}
+                {{{operationIdCamelCase}}}Success::Status{{code}}()
+                {{/dataType}}
+                {{#dataType}}
+                {{#isString}}
+                {{{operationIdCamelCase}}}Success::Status{{code}}(resp.text(){{#supportAsync}}.await{{/supportAsync}}?)
+                {{/isString}}
+                {{^isString}}
+                let content = resp.text(){{#supportAsync}}.await{{/supportAsync}}?;
+                {{{operationIdCamelCase}}}Success::Status{{code}}(serde_json::from_str(&content).map_err(Error::from)?)
+                {{/isString}}
+                {{/dataType}}
+            },
+            {{/is3xx}}
+            {{/responses}}
+            _ => {
+                let content = resp.text(){{#supportAsync}}.await{{/supportAsync}}?;
+                let entity: Option<{{{operationIdCamelCase}}}Error> = serde_json::from_str(&content).ok();
+                return Err(Error::ResponseError(ResponseContent { status, content, entity }));
+            }
+        };
+        {{#hasResponseHeaders}}
+        Ok(crate::apis::WithHeaders { body: entity, headers: response_headers })
+        {{/hasResponseHeaders}}
+        {{^hasResponseHeaders}}
+        Ok(entity)
+        {{/hasResponseHeaders}}
+    } else {
+        let content = resp.text(){{#supportAsync}}.await{{/supportAsync}}?;
+        let entity: Option<{{{operationIdCamelCase}}}Error> = serde_json::from_str(&content).ok();
+        Err(Error::ResponseError(ResponseContent { status, content, entity }))
+    }
+    {{/isResponseFile}}
 }
 
 {{/operation}}

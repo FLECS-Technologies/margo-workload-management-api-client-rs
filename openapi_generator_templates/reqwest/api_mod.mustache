@@ -11,6 +11,13 @@ pub struct ResponseContent<T> {
     pub entity: Option<T>,
 }
 
+/// A successful response paired with its typed response headers.
+#[derive(Debug, Clone)]
+pub struct WithHeaders<T, H> {
+    pub body: T,
+    pub headers: H,
+}
+
 #[derive(Debug)]
 pub enum Error<T> {
     Reqwest(reqwest::Error),
@@ -45,7 +52,14 @@ impl <T> fmt::Display for Error<T> {
             Error::SerdePathToError(e) => ("serde", format!("{}: {}", e.path().to_string(), e.inner().to_string())),
             {{/useSerdePathToError}}
             Error::Io(e) => ("IO", e.to_string()),
-            Error::ResponseError(e) => ("response", format!("status code {}", e.status)),
+            Error::ResponseError(e) => {
+                let message = if e.content.len() <= 1000 {
+                    &e.content
+                } else {
+                    "[content to large]"
+                };
+                ("response", format!("status code {}: {}", e.status, message))
+            },
             {{#withAWSV4Signature}}
             Error::AWSV4SignatureError(e) => ("aws v4 signature", e.to_string()),
             {{/withAWSV4Signature}}
